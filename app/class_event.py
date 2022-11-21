@@ -2,12 +2,8 @@ from datetime import datetime
 from sklearn.cluster import DBSCAN, KMeans
 from sklearn.feature_extraction.text import TfidfVectorizer
 import pandas as pd
-import jieba
 import numpy as np
 import jieba.posseg as pseg
-# import paddle
-# paddle.enable_static()
-# jieba.enable_paddle()
 import re
 
 #paramList = {'start_time', 'end_time', 'threshold', 'time_column', 'name_column', 'num_column', 'text_column', 'selected_columns', 'discrete_columns', 'eps', 'min_samples', 'n_clusters', 'n_init', 'max_iter', 'algorithm'}
