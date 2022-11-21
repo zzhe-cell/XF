@@ -1,0 +1,4 @@
+jieba == 0.42.1
+matplotlib
+sklearn
+paddlepaddle == 2.3.2
