@@ -105,9 +105,12 @@ for index, text in enumerate(texts):
 text_words = []
 text_flags = []
 for text in texts:
+    w_list = []
+    flag_list = []
     words = pseg.cut(text)
-    w_list = [w.word for w in words]
-    flag_list = [w.flag for w in words]
+    for word, flag in words:
+        w_list.append(word)
+        flag_list.append(flag)
     text_words.append(w_list)
     text_flags.append(flag_list)
 
