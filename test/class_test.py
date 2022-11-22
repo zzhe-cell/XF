@@ -2,7 +2,7 @@
 import pandas as pd
 file_path = '../data/信访事项统计表明细_xx.csv'
 df = pd.read_csv(file_path, encoding='gbk')
-paramsList = {'start_time': '2022-1-1', 'end_time': '2022-6-9', 'threshold': 2, 'name_column': '来访人', 'time_column': '来访时间', 'num_column': '人数', 'text_column': '来访诉求', 'selected_columns': ['信访目的', '涉事单位', '来访诉求', '来访时间'], 'discrete_columns': ['信访目的', '涉事单位'], 'eps': 1.04, 'min_samples': 1, 'n_clusters': 24, 'n_init': 10, 'max_iter': 300, 'algorithm': 'dbscan'}
+paramsList = {'start_time': '2022-1-1', 'end_time': '2022-6-9', 'threshold': 2, 'name_column': '来访人', 'time_column': '来访时间', 'num_column': '人数', 'text_column': '来访诉求', 'selected_columns': ['信访目的', '涉事单位', '来访诉求', '来访时间'], 'discrete_columns': ['信访目的', '涉事单位'], 'eps': 1.2, 'min_samples': 1, 'n_clusters': 24, 'n_init': 10, 'max_iter': 300, 'algorithm': 'dbscan'}
 code_str = """
 from datetime import datetime
 from sklearn.cluster import DBSCAN, KMeans
@@ -115,9 +115,12 @@ for index, text in enumerate(texts):
 text_words = []
 text_flags = []
 for text in texts:
+    w_list = []
+    flag_list = []
     words = pseg.cut(text)
-    w_list = [w.word for w in words]
-    flag_list = [w.flag for w in words]
+    for word, flag in words:
+        w_list.append(word)
+        flag_list.append(flag)
     text_words.append(w_list)
     text_flags.append(flag_list)
 
