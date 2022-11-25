@@ -43,23 +43,15 @@ def get_top_keywords(data, clusters, labels, n_terms):
 
 
 def get_result(data, clusters, dic):
-    res = pd.DataFrame()
-    types = list(set(clusters))
-    type_list = []
-    for type in types:
-        for id, item in enumerate(clusters):
-            if item == type:
-                type_list.append(type)
-                d = data.iloc[[id]]
-                res = pd.concat([res, data.iloc[[id]]], ignore_index=True)
-    res['类别'] = type_list
+
+    data['类别'] = clusters
     keyword_list = []
-    for i, row in res.iterrows():
+    for i, row in data.iterrows():
         keyword = dic[row['类别']]
         keyword = ','.join(keyword)
         keyword_list.append(keyword)
-    res['关键词'] = keyword_list
-    return res
+    data['关键词'] = keyword_list
+    return data
 
 def get_other_stopword_list(text_words, text_flags):
     per_list = []  # 人名列表
@@ -87,7 +79,7 @@ def get_other_stopword_list(text_words, text_flags):
     return per_list, org_list, time_list, loc_list
 
 #数据路径
-df[num_column] = df[num_column].astype('int')
+df = get_time_window(start_time, end_time, df)
 p = Preprocess(df)
 data1 = p.preprocess()
 data1.drop(columns=text_column, inplace=True)
@@ -99,7 +91,7 @@ texts = df[text_column].values.tolist()
 for index, text in enumerate(texts):
     text = re.sub('[\d]', '', text)
     text = re.sub('[一|二|三|四|五|六|七|八|九|十|采油]+厂', '', text)
-    text = re.sub('[\r\n]', '', text)
+    text = re.sub('[\\r]', '', text)
     texts[index] = text
 #jieba分词
 text_words = []
@@ -115,9 +107,11 @@ for text in texts:
     text_flags.append(flag_list)
 
 document = [" ".join(words) for words in text_words]
+print(document)
 per_list, org_list, time_list, loc_list = get_other_stopword_list(text_words, text_flags)
 stopword_list = stopword_list + per_list + org_list + time_list + loc_list
-tfidf_model = TfidfVectorizer(token_pattern=r'(?u)\b\w+\b', max_df=0.9, stop_words=stopword_list).fit(document)
+print(stopword_list)
+tfidf_model = TfidfVectorizer(token_pattern=r'(?u)\\b\w+\\b', max_df=0.9, stop_words=stopword_list).fit(document)
 tfidf_arr = tfidf_model.transform(document).toarray()
 clusters = []
 if algorithm == 'kmeans':
@@ -126,11 +120,11 @@ elif algorithm == 'dbscan':
     Dbscan_model = DBSCAN(eps=eps, min_samples=min_samples).fit(tfidf_arr)
     clusters = Dbscan_model.labels_
 keywords = get_top_keywords(tfidf_arr, clusters, tfidf_model.get_feature_names(), 3)
-res = get_result(df, clusters, keywords)
-data = get_time_window(start_time, end_time, res)
+data = get_result(df, clusters, keywords)
 type_list = data['类别'].unique().tolist()
 groups = data.groupby(by='类别')
 res_data = pd.DataFrame()
+#聚类类别人数字典{类别：人数}
 type_nums = {}
 for type in type_list:
     data_for_type = groups.get_group(type).reset_index(drop=True)
@@ -138,11 +132,9 @@ for type in type_list:
     num_for_type = int(data_for_type_noduplicate[num_column].sum())
     type_nums[type] = num_for_type
     if num_for_type >= threshold:
-        # 统计最多的信访目的作为类名
         res_data = pd.concat([res_data, data_for_type])
 type_num_list = []
 for i,r in res_data.iterrows():
     type_num_list.append(type_nums[r['类别']])
 res_data['类别人数'] = type_num_list
 df = res_data
-
